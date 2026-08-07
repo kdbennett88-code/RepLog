@@ -1,0 +1,12 @@
+body{
+    font-family: sans-serif;
+    max-width: 700px;
+    margin: 60px auto;
+    padding: 0 20px;
+    background: #111;
+    color: #eee;
+}
+
+a {
+    color: #6cf;
+}
