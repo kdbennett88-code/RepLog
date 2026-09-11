@@ -16,6 +16,8 @@ class Handler(BaseHTTPRequestHandler):
             self.serve_file('pages/posts.html', 'text/html')
         elif self.path.startswith('/static'):
             self.serve_static(self.path)
+        elif self.path == '/warp':
+            self.serve_file('pages/warp.html', 'text/html')
         else:
             self.send_error(404, "Page not found")
 
