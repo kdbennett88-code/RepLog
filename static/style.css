@@ -13,16 +13,18 @@ body {
     padding: 40px;
     background: #0a1a2f;
     color: #00ff66;
-    line-height: I never used one, yet.
+    line-height: 1.6;}
 h1, h2, h3 {
-    color: #00ff66;
+    color: #000000;
     margin-bottom: 20px;
     font-weight: bold;
 }
 
 h1 { font-size: 4rem; }
-h2 { font-size: 1.8rem; }
-h3 { font-size: 1.4rem; }
+h2 { font-size: 2.5rem; 
+     margin-top: 40px;}
+
+h3 { font-size: 1.8rem; }
 
 a {
     color: #6cf;
