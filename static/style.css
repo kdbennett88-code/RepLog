@@ -3,32 +3,27 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    }
+}
+
 /* Global page layout */
-body{
+body {
     font-family: "JetBrains Nerd Font", "JetBrains Mono", "Fira Code", "Courier New", monospace;
     max-width: 900px;
     margin: 60px auto;
     padding: 40px;
-    background: #0a1a2f;  /*Navy blue */
-    color: #00ff66;    /*Terminal Green*/
-    line-height: 1.6;
-}
+    background: #0a1a2f;
+    color: #00ff66;
+    line-height: I never used one, yet.
 h1, h2, h3 {
     color: #00ff66;
     margin-bottom: 20px;
     font-weight: bold;
 }
 
-h1 {
-    font-size: 2.4rem;
-}
-h2 {
-    font-size: 1.8rem;
-}
-h3 {
-    font-size: 1.4rem;
-}
+h1 { font-size: 4rem; }
+h2 { font-size: 1.8rem; }
+h3 { font-size: 1.4rem; }
+
 a {
     color: #6cf;
     text-decoration: none;
@@ -53,31 +48,49 @@ a:hover {
     background: #333;
 }
 
-/*Global card style( posts, projects, anything really)*/
 .card {
     background: #112544;
     padding: 20px;
     margin: 20px 0;
     border-radius: 8px;
-    border-left: 4px solid #00ff66;
+    border-left: 4px solid red;
 }
-/*Navigation bar and very good for posts.html page...*/
+
 nav {
     margin-bottom: 40px;
 }
 nav a {
     margin-right: 20px;
 }
-/*This following code is stuff I am adding and havent tested yet
- h1 {
-    font-size: 3rem;
-    margin-bottom: 0.5rem;     --controls space below the h1
-  }  
- h2 {
-    font-size: 2rem;
-    margin-top: 0.25;
-    margin-bottom: 1rem;
- }*/
 
+.hero-box {
+    background: linear-gradient(135deg, #0a1a2f, #112544);
+    padding: 30px;
+    border-radius: 10px;
+    border-left: 4px solid #00ff66;
+    margin-bottom: 40px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0, 255, 102, 0.25);
+    animation: glow 2s infinite alternate;
+}
 
+.left-text {
+    text-align: left;
+}
+
+@keyframes glow {
+    from { border-left-color: #00ff66; }
+    to   { border-left-color: #33ff88; }
+}
+
+/* Terminal block */
+.terminal {
+    background: #112544; /* slightly lighter navy */
+    padding: 20px;
+    border-radius: 8px;
+    font-family: monospace;
+    color: #00ff66;
+    margin-top: 30px;
+    border-left: 4px solid red;
+}
 

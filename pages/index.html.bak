@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Repository and Blog</title>
+    <link rel="stylesheet" href="/static/style.css">
+
+</head>
+<body>
+    <div class="terminal">
+        <p>$ neofetch</p>
+        <p>OS: Arch Linux</p>
+        <p>Kernel: 6.x</p>
+        <p>WM: Hyprland</p>
+        <p>Shell: Bash</p>
+    </div>
+    <h1>Welcome to Replog</h1>
+    <h2>I need to think of a cool thing to put here.. Also want to keep messing with thefont size because this shit isn't straight forward.
+    </h2>
+    <p>Rough draft of my RepLog project. Wish me luck!!</p>
+    <a href="/projects">See my projects</a>
+</body>
+</html>
