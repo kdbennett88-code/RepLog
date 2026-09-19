@@ -5,6 +5,7 @@
     padding: 0;
 }
 
+
 /* Global page layout */
 body {
     font-family: "JetBrains Nerd Font", "JetBrains Mono", "Fira Code", "Courier New", monospace;
@@ -15,17 +16,37 @@ body {
     color: #00ff66;
     line-height: 1.2;}
 
+body.code-body {
+    background: #000;
+    color: #fff;
+    font-family: "JetBrains Nerd Font", "JetBrains Mono", monospace;
+    padding: 40px;
+}
+pre {
+    background: #0a0a0a;
+    padding: 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+/* Syntax Highlighting in src/repo's */
+.keyword { color: #ff79c6; } /* pink and purple*/
+.string  { color: #50fa7b; } /* green */
+.number  { color: #bd93f9; } /* purple */
+.comment { color: #6272a4; } /* muted blue */
+
 h1, h2, h3 {
-    color: #000000;
+    color: #ffffff;     /*White and black is 000000*/
     margin-bottom: 20px;
     font-weight: bold;
 }
-
-h1 { font-size: 4rem; }
+h1 { 
+    font-size: 3.5rem;
+    margin-bottom: 10px;
+}
 h2 { font-size: 2.5rem; 
-     margin-top: 40px;}
+     margin-top: 40px 0;}
 
-h3 { font-size: 1.8rem; }
+     h3 { font-size: 1.8rem; }
 
 a {
     color: #6cf;
@@ -37,7 +58,7 @@ a:hover {
 }
 
 .projects {
-    display: block;
+   udisplay: block;
     padding: 12px 16px;
     margin: 12px 0;
     background: #222;
@@ -53,25 +74,26 @@ a:hover {
 
 .card {
     background: #112544;
-    padding: 20px;
-    margin: 20px 0;
-    border-radius: 8px;
-    border-left: 4px solid red;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border-left: 5px solid red;
 }
 
 nav {
     margin-bottom: 40px;
+
 }
 nav a {
     margin-right: 20px;
 }
 
 .hero-box {
-    background: linear-gradient(135deg, #0a1a2f, #112544);
-    padding: 30px;
-    border-radius: 10px;
-    border-left: 4px solid red;
-    margin-bottom: 40px;
+    background: linear-gradient(100deg, #0a1a2f, #112544);
+    padding: 20px;
+    border-radius: 15px;
+    border-left: 5px solid red;
+    margin-bottom: 20px;
     text-align: center;
     box-shadow: 0 0 25px rgba(0, 255, 102, 0.25);
     animation: glow 2s infinite alternate;
@@ -96,10 +118,23 @@ nav a {
     margin-top: 30px;
     border-left: 4px solid red;
 }
-
+/* This is my element that will allow me to put paragraph formatting inside of my html element containers... I am learning...*/
 .my-text-block p {
     text-indent: 2rem;
     margin-bottom: 1rem;
 }
-
-
+.my-text-block {
+    padding: 20px;
+    line-height: 1.6;
+}
+.replog-banner {
+    font-size: 1.1rem;  /* Increase Size */
+    line-height: 1.1;   /* Tighten spacing so ASCII stays aligned*/
+    margin-top: 25px;   /* optional */
+    margin-bottom: 10px;     /* spacing above/below */
+    margin: 40px auto;      /* center the block itself*/
+    color: #00ff66;
+    text-shadow: 0 0 8px #00ff66;
+    text-align: center;
+    display: inline-block;  /* makes the pre shrink to its content */
+}
