@@ -8,9 +8,19 @@ KEYWORDS = {
     'True', 'False', 'None'
 }
 
-def highlight_python(code):
-    code = html.escape(code)
+def safe_escape(code):
+    """Escape only the HTML characters that can break the page."""
+    return (
+        code.replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+    )
 
+def highlight_python(code):
+    # Escape ONLY <, >, &
+    code = safe_escape(code)
+
+    # Comments
     code = re.sub(
         r'(#.*?$)',
         r'<span class="comment">\1</span>',
@@ -18,18 +28,21 @@ def highlight_python(code):
         flags=re.MULTILINE
     )
 
+    # Strings — now quotes are REAL quotes
     code = re.sub(
-        r'(&quot;.*?&quot;|&#x27;.*?&#x27;)',
+        r'(\".*?\"|\'.*?\')',
         r'<span class="string">\1</span>',
         code
     )
 
+    # Numbers
     code = re.sub(
         r'\b(\d+)\b',
         r'<span class="number">\1</span>',
         code
     )
 
+    # Keywords
     for kw in KEYWORDS:
         code = re.sub(
             fr'(?<![=\w])\b{kw}\b(?![=\w])',

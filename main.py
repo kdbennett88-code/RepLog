@@ -28,6 +28,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/':
             self.serve_file('pages/index.html', 'text/html')
+        elif self.path == '/homelab':
+            self.serve_file('pages/homelab.html', 'text/html')
         elif self.path == '/projects':
             self.serve_file('pages/projects.html', 'text/html')
 # This is the start of when the user may be lookning through my projects repo's
