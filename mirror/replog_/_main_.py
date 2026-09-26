@@ -9,7 +9,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJ_DIR = os.path.join(BASE_DIR, "mirror")
 
-# What I need list_directory to ignore when parsing the repo
+# What I need list_directory to ignore when parsin the repo
 IGNORE_NAMES = {
         "__pycache__",
         "venv",

@@ -4,6 +4,8 @@
     margin: 0;
     padding: 0;
 }
+
+
 /* Global page layout */
 body {
     font-family: "JetBrains Nerd Font", "JetBrains Mono", "Fira Code", "Courier New", monospace;
@@ -34,19 +36,20 @@ pre {
 
 h1, h2, h3, h4 {
     color: #ffffff;     /*White and black is 000000*/
+    margin-top: 10px;
     font-weight: bold;
 }
 
 h1 { font-size: 3.8rem; }
 
-h2 { font-size: 3.0rem; 
-     text-align: middle; }
+h2 { font-size: 2.7rem; }
 
-h3 { font-size: 2.5rem; }
+h3 { font-size: 2.0rem; }
 
-h4 { font-size: 1.5rem;
+h4 { font-size: 1.2rem;
      text-align: middle; 
-     margin-top: 10px; }
+     margin-top: 25px; }
+
 
 a {
     color: #6cf;
@@ -72,6 +75,14 @@ a:hover { color: #33ff88; }
     background: #333;
 }
 
+/*.card {
+    background: #112544;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border-left: 5px purple;
+}
+*/
 .card {
     background: #112544;
     padding: 20px;                             /* Gives the card text breathing room */
@@ -99,6 +110,16 @@ a:hover { color: #33ff88; }
 nav { margin-bottom: 20px;
       margin-top: 20px; }
 
+/*.hero-box {
+    background: linear-gradient(100deg, #0a1a2f, #112544);
+    padding: 5px;
+    border-radius: 5px;
+    border-left: 5px solid red;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0, 255, 102, 0.25);
+    animation: glow 2s infinite alternate;
+}
+*/
 .hero-box {
     background: linear-gradient(100deg, #0a1a2f, #112544);
     padding: 25px;                            /* Increased padding so text breathes */
@@ -137,17 +158,19 @@ nav { margin-bottom: 20px;
     margin-left: 65px;
     text-align: left;
 }
-
 .list-container ul {
     padding-left: 20px;
     margin-top: 10px;
 
 }
-
 .list-container li { margin-bottom: 5px; }
 
+/*@keyframes glow {
+    from { border-left-color: #00ff66; }
+    to   { border-left-color: #33ff88; }
+}
+*/
 /* Normal box for holding pictures */
-
 .picture-box {
     background: #112544; /* slightly lighter navy */
     padding: 20px;
@@ -158,31 +181,21 @@ nav { margin-bottom: 20px;
     border-left: 4px solid red;
     margin-bottom: 30px;
 }
-
+/* This is my element that will allow me to put paragraph formatting inside of my html element containers... I am learning...*/
 .my-text-block p {
     text-indent: 2rem;
 }
-
 .my-text-block {
     padding: 20px;
-    line-height: 1.5;
+    line-height: 1.6;
 }
-
 .replog-banner {
     font-size: 1.1rem;  /* Increase Size */
     line-height: 1.1;   /* Tighten spacing so ASCII stays aligned*/
-    margin-top: 15px;   /* optional */
+    margin-top: 25px;   /* optional */
     margin-bottom: 10px;     /* spacing above/below */
     color: #00ff66;
     text-shadow: 0 0 8px #00ff66;
     text-align: center;
     display: inline-block;  /* makes the pre shrink to its content */
 }
-
-.heading-row {
-    display: flex;
-    align-items: baseline;
-    gap: 10px; /* space between the two headers */
-}
-
-.indent { margin-left: 85px; }

@@ -17,26 +17,212 @@
     <a href="/posts">My Posts</a>
 </nav>
 
-<div class="card">
+<div class="hero-box">
     <h1>My Homelab and Hardware setup</h1>
 </div>
 
 <div class="my-text-block">
-    <h3 class="left-text">Modem</h3> 
-    <p>I have a Arris Surfboard SB8200 </p>
+    <h3 class="left-text">Modem_ {</h3> 
+    <p>I have a Arris Surfboard SB8200 and my Xfinity service provides the otherworldy speeds of 300mbps Download and 10-20mbps Upload. I believe that this is a great start for me. I have always been the kind of person who just snags a default gateway device that Xfinity now hands out with all subscriptions. I originally wanted to learn how to do all of this so I could return the Xfinity hardware. I was under the impression that they would remove a 5-10$ a month hardware rental fee.</p> 
+    <p>In the future when I need faster internet speeds, I will most likely be either daisy chaining this SB8200 Surfboard to another SB8200 Surfboard because, as far as I am aware I am able to do that with this model of Modem. I am not sure how well this may or may not work. I also would need to look into how cost effective it would be to do that and achieve 1gbps - 2.5gbps download and 1/10 of that in upload speed.</p>
+    <h3 class="left-text">}</h3>
+    <h3 class="left-text">Router_ {</h3>
+    <p>This and my switch is what I really wanted to learn how to setup myself. I bought a Topton mini pc with a Celeron CPU and 8gb DDR4 + 128gb m.2 nvme ssd. This device came with PfSenseOS already flashed onto the device. I was able to access the admin panel via LAN and can also utilize via shell.</p>
+    <p>PfSenseOS is a FreeBSD derivative and works slightly different than the typical Linux and BSD systems. The traditional way to handle the networking stack software config was by having each service split up on their own '.conf' files. PfSenseOS instead centralizes this whole whole config onto one XML document. This is why they recommend just utilizing the webGUI for PfSenseOS admin panel. There are some tasks that are safe for the shell to perform. </p>
+</div>
+<div class="list-container">
+    <ul>
+        <h4>_PfSenseOS - Shell safe tasks {</h4>
+        <li>Running diagnostic utilities : ifconfig, netstat, pfctl -sr, top, ping, traceroute.</li>
+        <li>Reading system logs : clog, dmesg.</li>
+        <li>Running automated scripts that inspect network state.</li>
+        <h4>}</h4>
+    </ul>
 </div>
 
-<div class="hero-box">
-
-    <img src="/static/images/myhomelab.png" alt="Diagram" style="width: 100%; margin-top: 5px;">
+<div class='hero-box'>
+    <img src='/static/images/BSDfish.png' alt='Fish' style='width: 100%; margin-top: 5px;'>
 </div>
 
 <div class="my-text-block">
-    <p>This is the second line of test code to see what happens once it pops up onto my html page</p>
+    <p>I currently utilize minimal services on my PfSenseOS Router. I utilize Unbound (default DNS resolver), pfBlocker-NG, Wire Guard VPN Tunnel and Suricata. I also utilize Tail scale and have my whole LAN setup with the Tail scale network. This setup is nice because, if I am away from home and need to access something that I don't have on my laptop. I will end up just using SSH and the 'scp' command to perform a file transfer via SSH port. I can also just access whatever drives that I place into my Samba configuration file and share to my LAN and then pull them directly. If I remember correctly, Samba utilizes port 445 and will fall back to 443 if anything prevents the 445 access.</p>
+    <p>I wanted to set up my own Routing and Firewall etc. Admittedly, I didn't have to perform the tough part in setting up my PfSenseOS and mini PC. It was pre-flashed and already had the software on it. I had to set all the rules via webGUI. I wanted to attempt a headless install of PfSenseOS and enable Packet Filter(Firewall/NAT engine), ipfw(Firewall). I have never set up a Linux OS with iptables or iptables-nft | nft , whichever user space name it is.</p>
+    <p>In PfSenseOS the Routing Protocols and Routing Tables are managed natively by the FreeBSD kernel routing table, while dynamic routing protocols (OSPF, BGP, RIP) are handled by user-space daemons like FRRouting(FRR) or the native routed daemon. I believe Linux is somewhat similar to FreeBSD's but, has some differences on the compatibility level. I was so drawn to a FreeBSD derivative or, just a native FreeBSD OS install. I wanted to have the most secure OS performing these critical tasks and have always read that FreeBSD is one of the most secure OS's and that PfSenseOS is made specifically for a routing device. Eventually, I will get more practice with Linux kernel routing/firewall software and protocols.</p>
+</div>
+<div class="list-container">
+    <h4>_Unbound {</h4>
+        <ul>
+            <li>DNS resolver that will match a domain my devices type to an IP destination</li>
+            <li>Sits natively on my Routing device so my ISP doesn't perform DNS translation</li>
+            <li>Foundation that pfBlocker-NG sits on top of.</li>
+            <h4>}</h4>
+        </ul>
+</div>
+<div class="list-container">
+    <h4>_pfBlocker-NG {</h4>
+        <ul>
+            <li>My network 'Bouncer', essentially. Works through Unbound and maintains a block-list</li>
+            <li>No ads, trackers, malware domains, and can can configure GeoIP to block entire countries</li>
+            <li>This is a network wide service and applies to all devices that route through this gateway</li>
+            <h4>}</h4>
+        </ul>
+</div>
+<div class="list-container">
+    <h4>_Suricata {</h4>
+        <ul>
+            <li>The 'Guard Dog', essentially. Operates completely different than the other two</li>
+            <li>Sits on the wire and inspects the actual contents of my traffic in real time - by packet</li>
+            <li>Compares contents of packets to known attack signatures - malware, port scans, exploits.</li>
+            </ul>
+</div>
+<div class="heading-row indent">
+    <h4>}</h4>
+    <h3>}</h3>
+</div>
+<div class="my-text-block">
+    <h3 class="left-text">Switch_ {</h3>
+    <p>My LAN Switch device is a Cisco 3750x Catalyst. This is a enterprise level Switch and has 48 ethernet ports and I don't have a Wireless Access Point (WAP) currently. All of my devices are hardwired when at home and then when I am out in public, I utilize the public Wifi and will make my way over to my Wire Guard VPN tunnel to hopefully avoid any sort of threat actor intercepting my packets.</p>
+    <p>I am aware that I can use the 3750x for Layer 3 IP routing etc but, due to the 3750x having a end of life sticker on it as of April 11, 2011 - I don't allow it to handle any sort of routing and firewall services. This device doesn't touch the WAN in any way. Its purpose is for me to practice with Cisco IoT devices. Plus, I was able to snag this for 40$ and all devices I use in my LAN will get their own VLAN.</p>
+    <p>VLAN segmentation is a great habit to adapt if you're serious about minimizing the blast radius of a device becoming compromised on your network. I give each device their own separate VLAN so any traffic they send or recieve will get broadcasted to the management VLAN interface called the Trunk. This will also reduce the broadcast domain noise and equal better performance. Every device on a flat network hears every other device's broadcast traffic (ARP requests, DHCP discovers, mDNS, etc.). I don't have that many devices on my homelab LAN so, this will be much more noticeable as you add more devices. Segmentation also allows for my firewall rules to be more meaningful instead of theoretical. I am able to allow inter-VLAN communications this way and is how I am able to SSH and SMB from device to another device.</p>
+    <p>I am enjoying this whole setup so far but, I eventually would like to slowly upgrade my devices and my next Switch will be a modern day Switch that doesn't have deprecated security software as well as learning the newer Cisco config commands and process in setting up VLAN's. I know there is so much more for me to learn in all of these devices and I am doing my best to make sure that I allow myself the time to research and read. As much as I love Software Engineering, the Networking layer is the back bone to all of Computer Science. It is how we're able to move data across the wire and also put controls in place to encrypt/decrypt properly. Since I am so new at all of this Networking, Operating System, and Software Engineering tasks - I try and get practice in each and everyday. If any of you have suggestions for me, feel free to shoot me a message on my 'My Posts' section. That is where I enable the ability for people to reply to me. Thank you.</p>
+    <h3 class="left-text">}</h3>
+</div>
 
 <div class="hero-box">
-
+    <img src="/static/images/myhomelab.png" alt="Diagram" style="width: 90%; margin-top: 5px;">
+<div class="my-text-block">
+    <p>Above is a quick diagram that I made in the platform, Drawio. I love playing around with diagrams and plan on using GIMP and Drawio to get used to media manipulation and editing.</p>
 </div>
+</div>
+<div class="my-text-block">
+    <h3 class="left-text">VLAN and Devices_ {</h3>
+    <p>Below I am just listing some basic uses, I have for each of my devices and kind of just ranting some. I have made numerous changes on what I should focus on and about 6 months ago I decided that I really need to just focus on 3 spaces for now - Networking, Software Engineering, and Operating Systems. All three of these CS domains break down into sub-domains. I am trying my best to become good with Linux distro's. I have mainly been focusing on just using Debian, Arch, and will try Fedora out in this next month or two. I have become slightly obsessed with trying out different Linux distro's. Now, I have been forcing myself to stop 'RICING' my distro's as much as well as sticking with basic configuration for the programs I utilize the most - Bash, Tmux, Alacritty or Foot, Vim/Neovim but mainly Nvim, Zen-browser, or Brave. I have also been using Obsidian for note taking and are still getting used to it but, worth a shout-out.</p>
+</div>
+<div class="list-container">
+    <h4>_Desktop {</h4>
+        <ul>
+            <li>CPU : AMD Ryzen 5 7600X (12) @ 5.46 GHz.</li>
+            <li>RAM : 2x/16gb G.Skill Flare DDR5</li>
+            <li>GPU : ASRock Radeon RX 9060 XT 16gb Dual Fan.</li>
+            <li>Mother Board: Asus B650E Wifi. & Disk : Sky Hynix Platinum P41 2tb</li>
+            <li>PSU : Seasonic 850w, Core GX-850 / 80+ Gold rating.</li>
+            <li>Case & Cooling : Black Lian Li LANCOOL 207 model & 2/140mm, 7/120mm fans.</li>
+            <li>Peripherals : Keychron J2 red/linear Keys & Logitech M650L Mouse.</li>
+        </ul>
+    <h4>}</h4>
+</div>
+<div class="my-text-block">
+    <p>The current Operating System that I am daily driving on my desktop is CachyOS. I built this desktop about 1 year ago now and I am very glad I didn't wait any longer. The same 32gb of DDR5 that I bought a year ago is 2.5x what is was then. The same disk that I have now is about double the price. The build at that time of the year was less than 1400.00$. I was trying to stay under 1000.00$ in total. That didn't go over well because, I thought I was going to game a lot more than I actually do and went with a decent GPU - along with RAM and NVME storage going up in prices.</p>
+    <p>I might have played about 200hrs or video games in the past 1.5 years, give or take 25hrs. I have mainly been spending my free time on learning how to use Linux, Python, general SQL syntax, Networking and Systems Admin-like tasks. I am happy that I have been able to find something that I can envelope myself in and do my best to push myself mentally. I have always been more of a laborer lacking the technical skills. I am realizing that I wish I would have found this hobby when I was younger.</p> 
+    <p>All of it has been very eye opening. I never realized how complex these devices are - heck even just a modern day calculator is very complex. The more I have been learning over the past 1-1.5 years, I have been making a tough decision to purely focus on learning more about these machines. As well as, how to program properly - with and without the help of LLM's. I personally enjoy programming and try to not allow LLM's to do the designing and will use them as 'quicker google searcher' if I am hitting a wall and/or taking too long to figure something out. Networking and learning Linux has been right there along with my journey in learning how to program. There is almost no way around using the command line interface in Linux and that used to intimidate me. Now, I prefer the CLI over any other GUI, in most cases.</p>
+    <p>Since I haven't been playing games much at all anymore, I have just been staring at my GPU like, why did I buy you?!. I then realized, there is such thing as local LLM use. Sure, I only have 16gb of VRAM but, whatever - here goes nothing! I downloaded llama.cpp and utilize the TUI program Ollama and have it as a systemd service on my desktop. I am actually looking into creating my own frontend as well as looking into what kind of sorcery I can pull off with the context window and token usage/procurement etc. There is a lot that I don't even know that I don't know about, yet - isn't that how learning about complex concepts like computational technology goes? Either way, I am slowly learning how to setup MCP and utilize qwen3-coder:14b, gemma3:16b and a couple others.</p>
+    <p>I am in the process of also familiarizing myself with Docker and even have been considering taking some time in the next month or two learn some of the basics in Podman. I only have a couple different services running in Docker containers. Currently, I have one PostgreSQL containers and another MySQL container. Each container is the REPL for each service and that is where I play around and something that is helping me with learning SQL.</p>
+    <p>I have so many things that I want to try out and just do but, I am forcing myself to get a firm understanding of the fundamentals so that as I build more complex knowledge of bigger systems. I need to make sure that I actually can critically think my way through it and learn how to utilize LLM's and LLM Harnesses with specific tool and/or plugins. I know that the future is AI, AI is here to stay and I personally enjoy leveraging the tool but, also understand to take precaution in doing such tasks.</p> 
+</div>
+<div class="list-container">
+    <h4>_Raspberry Pi 5 {</h4>
+    <ul>
+        <li>CPU : BCM2712 (4) @ 2.40 GHz.</li>
+        <li>RAM : 8gb LPDDR4X</li>
+        <li>GPU : Broadcom bcm2712-vc6 [Integrated]</li>
+        <li>Disk : Kingsman Gen3x1 1tb M.2 NVMe SSD</li>
+        <li>Case : Geek Worm Metal case and stock active cooler + heat sink</li>
+        <li>Hat attachments : Geek Worm X1002 PCIe to M.2 Shield</li>
+    </ul>
+    <h4>}</h4>
+</div>
+<div class="my-text-block">
+    <p>On my Rpi5, I am running DietPi - a bare-minimum OS built on a Debian derivative made specifically for the ARM64 instruction set. I can run headless and maintain majority of my RAM for the different domains that I host to the WAN. This website domain being one. I plan on creating some more services and, why I want to get the hang of building my own Docker containers for cross platform utilization for users. I also utilize Nginx as one of my systemd services along with Docker and the typical stuff like SSH and Network Manager etc.</p>
+    <p>My plan is to keep this device focused on being my host for web services - either, I am consuming or serving content. I have read a little bit about Proxmox and Kubernetes. I am still a big noob with creating and utilizing Virtual Machines (VM). I am taking more time to learn about basics in how our CPU's determine privileges and the 'protection rings' e.g. Ring 0 = Kernel mode aka supervisor mode, Ring 3 = User mode and where user space applications process runs. When they need to intereact with the hardware; depending on the hardware and OS, the OS Engineers will map their low level instructions like - read(), write(), fork(), etc. To different instruction codes that match the CPU's architecture - x86_64, ARM, ARM64. If a process crashes in user space, no big deal. If a process crashes in kernel space aka ring 0. That is what we call a 'kernel panic' aka bluescreen.</p>
+    <p>Apparently, these rings of protection go even lower than ring 0!!?? I know , I was just as shocked as you were when reading this. I will list the rings of protection below to hopefully paint a clear picture of this low level concept. As far as I can tell the -1, -2, and -3 aren't official area's that the manufacturers coined them but, it is what Cyber Security personnel have been calling them.</p>
+</div>
+
+<div class='hero-box'>
+    <h2>Lord of The Rings</h2>
+    <img src='/static/images/RingsOfProtection.png' alt='diagram' style='width: 90%; margin-top: 5px;'>
+</div>
+
+<div class="list-container">
+    <h4>Rings of protection {</h4>
+        <ul>
+            <li>Ring 0 : Kernel mode, has access to everything in the PC.</li>
+            <li>Ring 1 : Rings 1 and 2 are not used as often today and used to house drivers.</li>
+            <li>Ring 2 : Over the years OS manufacturers settled on 2 Ring layers for operation</li>
+            <li>Ring 3 : User space and is where the user is trusted to be.</li>
+        </ul>
+    <h4>}</h4>
+</div>
+
+<div class='my-text-block'>
+    <p>Above you can see a diagram of what the modern rings of protection look like. It is quite interesting how it all works but, makes sense. We cannot be trusted to interact directly with the hardware and is enforced with the rings of protection and 'syscalls'.to interect with a kernel module - typically some sort of low level C code and even Assembly in some parts that require maximum efficiency.</p>
+
+    <p>I always find the abstraction process to be so interesting, and learning how drivers work in specific OS's can help you avoid headaches from time to time. In Linux the Kernel is a monolithic entity, and drivers run in kernel space - hence one of the reasons why Linux performance is looked at as the best. A fun way to look at how much time your program spends in kernel space and/or user space is by invoking the command 'time' and then append whatever program you want to pass through the time command.</p>
+</div>
+<div class='list-container'>
+    <h4>Bash input : 'time python3 expense_tracker.py'</h4>
+        <ul>
+            <li>real  0m2.341s</li>
+            <li>user  0m2.210s</li>
+            <li>sys   0m0.089s</li>
+        </ul>
+</div>
+
+<div class='my-text-block'>
+    <p>Now, I didn't actually run that command on that python program but, the output will be those bullet points to let you know how long each ring spends with computing the statements of your program. This is a fun tool to play around with and try to see if your program has a heavy amount of Syscalls it needs to make to be performing those low level C programs like read(), write(), ioctl().</p>
+</div>
+
+<div class='list-container'>
+    <h4>_Think Pad T470s {</h4>
+        <ul>
+            <li>CPU : Intel(R) Core(TM) i5-6300U (4) @ 3.00 GHz.</li>
+            <li>RAM : 8gb DDR4 SODIMM.</li>
+            <li>GPU : Intel HD Graphics 520 @ 1.00 GHz [Integrated].</li>
+            <li>Disk : 256gb M.2 NVME (Not sure what gen but probably 2-3x1-2 lanes).</li>
+            <li>Shared Disks : 512gb external USB3.0 SSD.</li>
+        </ul>
+    <h4>}</h4>
+</div>
+
+<div class='my-text-block'>
+    <p>I had purchased this Think Pad about 1 month ago, and I love this device. It isn't my fastest device but, I have recently been looking into how I can obtain some cheap devices - PC/Laptops/SBC's etc. Now, I want cheap devices that I can still get 3-5 years of use out of - hopefully. I spent only 120.00$ on this Think Pad and it is in almost mint condition, surprisingly.</p>
+    <p>This Think Pad is just acting as my NAS controller right now. I just use Samba and Sambaclient to reading and writing to the shared Disk/Disks. I only am utilizing a 512gb external USB3/SSD currently. I was just very happy to be able to set it up so easily, to be honest. I was assuming that it would have been somewhat tougher to set up but, it was straight forward.</p>
+    <p>I am trying to think of some other minor services I can run from my T470s but, I haven't been putting as much thought into this yet. Some quick uses I have already thought of has been to set these devices up with a VM/VM's and then even make mock script that would make a fake website to host on the VM/VM's. I would then practice little things like scanning the ports and performing some sort of penetration practice as well as learning some ways to defend against actual black hats, or gray hats. I have a lot of interest towards Networking/Software Engineering as well as Operating Systems, and Cyber Security is ALWAYS there on my mind. I often find myself wanting to find flaws in things I design. I will look at a project and ask myself, how can a user inject SQL or HTML into this server, or program etc. I have never port forwarded a device to be able to broadcast the domain to the public. I am nervous about it but, like I said - I will keep digging and asking questions. Utilizing LLM's will most definitely be apart of this process.</p>
+    <h4>}</h4>
+</div>
+
+<div class='list-container'>
+    <h4>_HP Laptop {</h4>
+        <ul>
+            <li>CPU : 11th Gen Intel(R) Core(TM) i5-1155G7 (8) @ 4.50 GHz.</li>
+            <li>RAM : 12gb DDR4.</li>
+            <li>GPU : Intel Iris Xe Graphics @ 1.35 GHz [Integrated].</li>
+            <li>Disk : 256gb M.2 NVMe SSD</li>
+        </ul>
+    <h4>}</h4>
+</div>
+
+<div class='my-text-block'>
+    <p>My HP laptop is decent and is running Arch. I am very new to Linux. I have about 8- 9 months of experience with Linux so far. I have gotten sick of the closed source/proprietary software that we are subjected to use due to how complex and grand of a task it is to create a Operating System. I never fully understood the complexities of Operating Systems until I started to use Linux. I was met with so many questions once I started to use Linux. I got so annoyed with my final interactions with Windows 11 and getting psuedo stuck in the invasive MS 360 Office ad's directly after I entered my pin. That left me so incredibly mad and at the time I had decided to try out Ubuntu because, I started using WSL and bash inside VS code. I realized I could just dual boot Windows and Linux on the same drive and gave it a shot. Kept Windows because, I assumed I would come running back for some reason but, quite the contrary in fact.</p>
+    <p>I finally decided to wipe my disk entirely after about 2 months of Ubuntu and wanted to reinstall a different distro and decided on Debian. No more wrestling with the damn cloud that is constantly trying to back up my data, and will turn itself back on despite me turning it off.. I said to myself, this is ridiculous and seems like big data was doing a good job with collecting my digital footprint - and I am glad it did. I am now fed lots of info on YT algorithm for FOSS and people who dedicate their lives to reading and dissecting professional articles and then regurgitating this knowledge to the audience. Along with different small businesses and bigger businesses that are selling computational hardware. Also, is sparking a desire in me to spend some money towards learning how to solder and play around with PCB, and deal with lower level embedded systems. Micro controllers and basic bread board projects to teach me how to properly create logic gates etc. It has all sparked such a strong desire for me to try my best to understand how my desktop or laptop is even possible.</p>
+    <p>In regards to this actual device, lol - sorry. I use this HP Laptop as my device that I take to places if I want to be able to work on personal projects, or other stuff like research, and general entertainment. I also am using this as my learning platform because, I am more willing to try new commands and setups on this device. I mainly have been using Hyprland + Quickshell for my DE. I have used Sway before and most of my experience in display manageres/desktop environments has been spent in Wayland. I plan on changing my main distro that I use on my desktops 2 tb drive to repartition and shrink my cachyOS partition because, it is mainly for gaming. Then, keep about 500gb for a minimal Debian + Xfce4 install for my main work distro.</p>
+</div>
+
+<div class='hero-box'>
+    <h2>Linux Rant</h2>
+    <img src='/static/images/Void_Xfce.jpg' alt='diagram' style='width: 90%; margin-top: 5px;'>
+</div>
+
+<div class='my-text-block'>
+    <p>I would like to try out different init systems. In learning more about how much of a grasp systemd has on us users/admins in user land in how we manage our systems services. I would like to see what unix's original vision was for the init system. Also, I want to check out different C libraries - meaning 'musl' that is used in small Linux distros like, Void. Void utilizes the runit, init system. </p>
+</div>
+
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/projects">My Projects</a>
+    <a href="/homelab">My Homelab</a>
+    <a href="/posts">My Posts</a>
+</nav>
 
 </body>
 </html>

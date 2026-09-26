@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RepLog</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/projects">My Projects</a>
+    <a href="/homelab">My Homelab</a>
+    <a href="/posts">My Posts</a>
+</nav>
+
+<div class="hero-box">
+    <h1>My Homelab and Hardware setup</h1>
+</div>
+
+<div class="my-text-block">
+    <h3 class="left-text">Modem</h3> 
+    <p>I have a Arris Surfboard SB8200 and my Xfinity service provides the otherworldy speeds of 300mbps Download and 10-20mbps Upload. I believe that this is a great start for me. I have always been the kind of person who just snags a default gateway device that Xfinity now hands out with all subscriptions. I originally wanted to learn how to do all of this so I could return the Xfinity hardware. I was under the impression that they would remove a 5-10$ a month hardware rental fee.</p> 
+    <p>In the future when I need faster internet speeds, I will most likely be either daisy chaining this SB8200 Surfboard to another SB8200 Surfboard because, as far as I am aware I am able to do that with this model of Modem. I am not sure how well this may or may not work. I also would need to look into how cost effective it would be to do that and achieve 1gbps - 2.5gbps download and 1/10 of that in upload speed.</p>
+    <h3 class="left-text">Router</h3>
+    <p>This and my switch is what I really wanted to learn how to setup myself. I bought a Topton mini pc with a Celeron CPU and 8gb DDR4 + 128gb m.2 nvme ssd. This device came with PfSenseOS already flashed onto the device. I was able to access the admin panel via LAN and can also utilize via shell.</p>
+    <p>PfSenseOS is a FreeBSD derivative and works slightly different than the typical Linux and BSD systems. The traditional way to handle the networking stack software config was by having each service split up on their own '.conf' files. PfSenseOS instead centralizes this whole whole config onto one XML document. This is why they recommend just utilizing the webGUI for PfSenseOS admin panel. There are some tasks that are safe for the shell to perform. </p>
+</div>
+<div class="list-container">
+    <ul>
+        <h4>PfSenseOS - Shell safe tasks</h4>
+        <li>Running diagnostic utilities : ifconfig, netstat, pfctl -sr, top, ping, traceroute.</li>
+        <li>Reading system logs : clog, dmesg.</li>
+        <li>Running automated scripts that inspect network state.</li>
+    </ul>
+</div>
+<div class="my-text-block">
+    <p>I currently utilize minimal services on my PfSenseOS Router. I utilize Unbound (default DNS resolver), pfBlocker-NG, Wire Guard VPN Tunnel and Suricata. I also utilize Tail scale and have my whole LAN setup with the Tail scale network. This setup is nice because, if I am away from home and need to access something that I don't have on my laptop. I will end up just using SSH and the 'scp' command to perform a file transfer via SSH port. I can also just access whatever drives that I place into my Samba configuration file and share to my LAN and then pull them directly. If I remember correctly, Samba utilizes port 445 and will fall back to 443 if anything prevents the 445 access.</p>
+    <p>I wanted to set up my own Routing and Firewall etc. Admittedly, I didn't have to perform the tough part in setting up my PfSenseOS and mini PC. It was pre-flashed and already had the software on it. I had to set all the rules via webGUI. I wanted to attempt a headless install of PfSenseOS and enable Packet Filter(Firewall/NAT engine), ipfw(Firewall). I have never set up a Linux OS with iptables or iptables-nft | nft , whichever user space name it is.</p>
+    <p>In PfSenseOS the Routing Protocols and Routing Tables are managed natively by the FreeBSD kernel routing table, while dynamic routing protocols (OSPF, BGP, RIP) are handled by user-space daemons like FRRouting(FRR) or the native routed daemon. I believe Linux is somewhat similar to FreeBSD's but, has some differences on the compatibility level. I was so drawn to a FreeBSD derivative or, just a native FreeBSD OS install. I wanted to have the most secure OS performing these critical tasks and have always read that FreeBSD is one of the most secure OS's and that PfSenseOS is made specifically for a routing device. Eventually, I will get more practice with Linux kernel routing/firewall software and protocols.</p>
+</div>
+<div class="list-container">
+    <ul>
+        <h4>Unbound service</h4>
+        <li>DNS resolver that will match a domain my devices type to an IP destination</li>
+        <li>Sits natively on my Routing device so my ISP doesn't perform DNS translation</li>
+        <li>Foundation that pfBlocker-NG sits on top of.</li>
+        <h4>pfBlocker-NG</h4>
+        <li>My network 'Bouncer', essentially. Works through Unbound and maintains a block-list</li>
+        <li>No ads, trackers, malware domains, and can can configure GeoIP to block entire countries</li>
+        <li>This is a network wide service and applies to all devices that route through this gateway</li>
+        <h4>Suricata</h4>
+        <li>The 'Guard Dog', essentially. Operates completely different than the other two</li>
+        <li>Sits on the wire and inspects the actual contents of my traffic in real time - by packet</li>
+        <li>Compares contents of packets to known attack signatures - malware, port scans, exploits.</li>
+    </ul>
+</div>
+<div class="my-text-block">
+    <h3 class="left-text">Switch</h3>
+    <p>My LAN Switch device is a Cisco 3750x Catalyst. This is a enterprise level Switch and has 48 ethernet ports and I don't have a Wireless Access Point (WAP) currently. All of my devices are hardwired when at home and then when I am out in public, I utilize the public Wifi and will make my way over to my Wire Guard VPN tunnel to hopefully avoid any sort of threat actor intercepting my packets.</p>
+    <p>I am aware that I can use the 3750x for Layer 3 IP routing etc but, due to the 3750x having a end of life sticker on it as of April 11, 2011 - I don't allow it to handle any sort of routing and firewall services. This device doesn't touch the WAN in any way. Its purpose is for me to practice with Cisco IoT devices. Plus, I was able to snag this for 40$ and all devices I use in my LAN will get their own VLAN.</p>
+    <p>VLAN segmentation is a great habit to adapt if you're serious about minimizing the blast radius of a device becoming compromised on your network. I give each device their own separate VLAN so any traffic they send or recieve will get broadcasted to the management VLAN interface called the Trunk. This will also reduce the broadcast domain noise and equal better performance. Every device on a flat network hears every other device's broadcast traffic (ARP requests, DHCP discovers, mDNS, etc.). I don't have that many devices on my homelab LAN so, this will be much more noticeable as you add more devices. Segmentation also allows for my firewall rules to be more meaningful instead of theoretical. I am able to allow inter-VLAN communications this way and is how I am able to SSH and SMB from device to another device.</p>
+    <p>I am enjoying this whole setup so far but, I eventually would like to slowly upgrade my devices and my next Switch will be a modern day Switch that doesn't have deprecated security software as well as learning the newer Cisco config commands and process in setting up VLAN's. I know there is so much more for me to learn in all of these devices and I am doing my best to make sure that I allow myself the time to research and read. As much as I love Software Engineering, the Networking layer is the back bone to all of Computer Science. It is how we're able to move data across the wire and also put controls in place to encrypt/decrypt properly. Since I am so new at all of this Networking, Operating System, and Software Engineering tasks - I try and get practice in each and everyday. If any of you have suggestions for me, feel free to shoot me a message on my 'My Posts' section. That is where I enable the ability for people to reply to me. Thank you.</p>
+</div>
+<div class="hero-box">
+
+    <img src="/static/images/myhomelab.png" alt="Diagram" style="width: 90%; margin-top: 5px;">
+<div class="my-text-block">
+    <p>Above is a quick diagram that I made in the platform, Drawio. I love playing around with diagrams and plan on using GIMP and Drawio to get used to media manipulation and editing.</p>
+</div>
+</div>
+<div class="my-text-block">
+    <h3 class="left-text">VLAN and Devices</h3>
+    <p>Below I am just listing some basic uses, I have for each of my devices and kind of just ranting some. I have made numerous changes on what I should focus on and about 6 months ago I decided that I really need to just focus on 3 spaces for now - Networking, Software Engineering, and Operating Systems. All three of these CS domains break down into sub-domains. I am trying my best to become good with Linux distro's. I have mainly been focusing on just using Debian, Arch, and will try Fedora out in this next month or two. I have become slightly obsessed with trying out different Linux distro's. Now, I have been forcing myself to stop 'RICING' my distro's as much as well as sticking with basic configuration for the programs I utilize the most - Bash, Tmux, Alacritty or Foot, Vim/Neovim but mainly Nvim, Zen-browser, or Brave. I have also been using Obsidian for note taking and are still getting used to it but, worth a shout-out.</p>
+</div>
+<div class="list-container">
+    <ul>
+        <h4>Desktop</h4>
+        <li>CPU + RAM : Ryzen 5 7600x | 2x/16gb DDR5 G.Skill Flare.</li>
+        <li>GPU : ASRock Radeon RX 9060 XT 16gb Dual Fan.</li>
+        <li>Mother Board: Asus B650E Wifi. | Disk : Sky Hynix Platinum P41 2tb</li>
+        <li>PSU : Seasonic 850w, Core GX-850 / 80+ Gold rating.</li>
+        <li>Case : Black Lian Li LANCOOL 207 model.</li>
+        <li>Peripherals : Keychron J2 red/linear Keys| Logitech M650L Mouse | 2x/140mm, 7x/120mm Fans</li>
+    </ul>
+</div>
+<div class="my-text-block">
+    <p>I built this desktop about 1 year ago now and I am very glad I didn't wait any longer. The same 32gb of DDR5 that I bought a year ago is 2.5x what is was then. The same disk that I have now is about double the price. The build at that time of the year was less than 1400.00$. I was trying to stay under 1000.00$ in total. That didn't go over well because, I thought I was going to game a lot more than I actually do and went with a decent GPU - along with RAM and NVME storage going up in prices.</p>
+    <p>I might have played about 200hrs or video games in the past year, give or take 25hrs. I have mainly been spending my free time on learning how to use Linux, Python, general SQL syntax, Networking and Systems Admin-like tasks. All of it has been very eye opening. I never realized how complex these devices are - heck even just a modern day calculator is very complex. The more I have been learning over the past 1-1.5 years, I have been making a tough decision to purely focus on learning more about these machines. As well as, how to program properly - with and without the help of LLM's. I personally enjoy programming so I try to not allow LLM's to do the designing and will use them as 'quicker google searcher'. Networking and learning Linux has been right there along with my journey in learning how to program. There is almost no way around using the command line interface in Linux and that used to intimidate me. Now, I prefer the CLI over any other GUI, in most cases.</p>
+    <p>Since I haven't been playing games much at all anymore, I have just been staring at my GPU like, why did I buy you?!. I then realized, there is such thing as local LLM use. Sure, I only have 16gb of VRAM but, whatever - here goes nothing! I downloaded llama.cpp and utilize the TUI program Ollama and have it as a systemd service on my desktop. I am actually looking into creating my own frontend as well as looking into what kind of sorcery I can pull off with the context window and token usage/procurement etc. There is a lot that I don't even know that I don't know about, yet - isn't that how learning about complex concepts like computational technology goes?</p>
+    <p>I am in the process of also familiarizing myself with Docker and even have been considering the Docker al</p>
+
+</div>
+<div class="my-text-block">
+</div>
+     
+<nav>
+    <a href="/">Home</a>
+    <a href="/projects">My Projects</a>
+    <a href="/homelab">My Homelab</a>
+    <a href="/posts">My Posts</a>
+</nav>
+
+</body>
+</html>
+
