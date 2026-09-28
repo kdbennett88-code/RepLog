@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/projects">My Projects</a>
+    <a href="/homelab">My Homelab</a>
+    <a href="/posts">My Posts</a>
+</nav>
+
+<div class="hero-box">
+    <h1>{{title}}</h1>
+</div>
+
+<p>{{content}}</p>
+
+<h2>Replies</h2>
+<div>{{replies}}</div>
+
+<h3>Add Reply</h3>
+<form action="/reply" method="POST">
+    <input type="hidden" name="post_id" value="{{id}}">
+    <textarea name="content" rows="4" cols="60"></textarea><br><br>
+    <button type="submit">Reply</button>
+</form>
+
+</body>
+</html>
+

@@ -61,3 +61,17 @@ def list_replies(post_id):
     conn.close()
     return rows
 
+def get_post(post_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT id, title, content, created_at FROM posts WHERE id = ?", (post_id, ))
+    row = cur.fetchone()
+    conn.close()
+    return row
+
+def delete_reply(reply_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM replies WHERE id = ?", (reply_id, ))
+    conn.commit()
+    conn.close()

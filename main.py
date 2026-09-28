@@ -1,112 +1,60 @@
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
+import time
+import os
+# Import modules
 from src.syntax_highlighter import highlight_python
 from src.list_repo import list_repo_files
 from src.render_source_file import render_source_file
-from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
-import time
-import os
+from src import db   
 
-# Serve files from this directory (where app.py lives)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJ_DIR = os.path.join(BASE_DIR, "mirror")
 
-# What I need list_directory to ignore when parsing the repo
-IGNORE_NAMES = {
-        "__pycache__",
-        "venv",
-        ".env",
-        ".git",
-        ".gitignore"
-        }
-IGNORE_EXTENSION = {
-        ".db",
-        ".json",
-        ".pyc"
-        }
+IGNORE_NAMES = {"__pycache__", "venv", ".env", ".git", ".gitignore"}
+IGNORE_EXTENSION = {".db", ".json", ".pyc"}
 
 class Handler(BaseHTTPRequestHandler):
 
-    def do_GET(self):
-        if self.path == '/':
-            self.serve_file('pages/index.html', 'text/html')
-        elif self.path == '/homelab':
-            self.serve_file('pages/homelab.html', 'text/html')
-        elif self.path == '/projects':
-            self.serve_file('pages/projects.html', 'text/html')
-# This is the start of when the user may be lookning through my projects repo's
+    # Helper: read query parameters
+    def get_query_param(self, key, default=None):
+        parsed = urlparse(self.path)
+        qs = parse_qs(parsed.query)
+        return qs.get(key, [default])[0]
 
-        elif self.path.startswith('/projects/'):
-            relative = self.path.replace("/projects/", "")
-            full_path = os.path.join(PROJ_DIR, relative)
-# Not neccessary but is smart for extra safety in ensuring the user cant travel outside
-# of my actual replog repo... May have to come back to this and strengthen.
+    # Helper: redirect
+    def redirect(self, location):
+        self.send_response(302)
+        self.send_header("Location", location)
+        self.end_headers()
 
-            safe_path = os.path.normpath(full_path)
-            if not safe_path.startswith(PROJ_DIR):
-                self.send_error(403, "Forbidden[00]")
+    # Helper: admin check
+    def is_admin(self):
+        return self.client_address[0] == "127.0.0.1"
 
-            if os.path.isdir(full_path):
-                return self.list_directory(full_path)
-            else:
-                return self.serve_project_file(full_path)
-
-            try:
-                with open(full_path, "rb") as f:
-                    content. f.read()
-                self.send_response(200)
-                self.send_header('Content-type', 'text/plain')
-                self.end_headers()
-                self.wfile.write(content)
-            except:
-                self.send_error(404, 'File not found[0]')
-# This block is going to be accessing my src/personal repo, and going through the 
-# highlighting and repo file finder etc.. slightly confusing but is making sense..
-        elif self.path == '/repo':
-            files = list_repo_files()
-            html = "<html><body><h2>Repo Browser</h2><ul>"
-            for f in files:
-                link = f"/repo/file?name={f['name']}</a></li>"
-                html += f'<li><a href="{link}">{f["name"]}</a></li>'
-            html += "</ul></body></html>"
-
+    # Helper: serve static or HTML
+    def serve_file(self, relative_path, content_type):
+        full_path = os.path.join(BASE_DIR, relative_path)
+        try:
+            with open(full_path, "rb") as f:
+                content = f.read()
             self.send_response(200)
-            self.send_headers()
-            self.wfile.write(html.encode())
-
-        elif self.path.startswith('/repo/file'):
-            from urllib.parse import urlparse, parse_qs
-
-            qs = parse_qs(urlparse(self.path).query)
-            name = qs.get("name", [""])[0]
-
-            full_path = os.path.join(PROJ_DIR, name)
-
-            if not os.path.isfile(full_path):
-                self.send_error(404, "File not found[0.5]")
-                return
-
-            html = render_source_file(full_path)
-            send.send_response(200)
-            self.send_header("Content-type", "text/html")
+            self.send_header("Content-type", content_type)
             self.end_headers()
-            self.wfile.write(html.encode())
+            self.wfile.write(content)
+        except FileNotFoundError:
+            self.send_error(404, "[0] File not found")
 
-        elif self.path == '/posts':
-            self.serve_file('pages/posts.html', 'text/html')
-        elif self.path.startswith('/static'):
-            self.serve_static(self.path)
-        elif self.path == '/warp':
-            self.serve_file('pages/warp.html', 'text/html')
-        else:
-            self.send_error(404, "Page not found[1]")
-    
-# list_directory, and serve_project_file are both helper functions for being able to 
-# serve proper src files and expose my own native repo and not have to depend on github.
+    def serve_static(self, path):
+        relative_path = path.lstrip("/")
+        content_type = "text/css" if path.endswith(".css") else "application/octet-stream"
+        self.serve_file(relative_path, content_type)
 
+    # Iterates through the current directory and will filter out the dot files along wit# making sure that I and generating a new html page.
     def list_directory(self, path):
         try:
             entries = os.listdir(path)
             entries.sort()
-            
             filtered = []
             for name in entries:
                 if name.startswith('.'):
@@ -123,24 +71,23 @@ class Handler(BaseHTTPRequestHandler):
                 link = f"{self.path.rstrip('/')}/{name}"
                 html += f'<li><a href="{link}">{name}</a></li>'
             html += "</ul></body></html>"
-                
-            
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
             self.wfile.write(html.encode())
         except Exception:
-            self.send_error(404, "Cannot list directory[2]")
-
+            self.send_error(404, "Cannot list directory[4]")
+     
+     # Will serve the html page with my projects repo present for the user      
     def serve_project_file(self, full_path):
         # Block dotfiles
         if os.path.basename(full_path).startswith("."):
-            self.send_error(403, "Forbidden[3]")
+            self.send_error(403, "Forbidden[5]")
             return
         # Block extensions
         for ext in IGNORE_EXTENSION:
             if full_path.endswith(ext):
-                self.send_error(403, "Forbidden[4]")
+                self.send_error(403, "Forbidden[6]")
                 return
 # Try to parse the html and pass files through the highlight_python function and use
 # HTML injection... Study all this!!
@@ -163,75 +110,179 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(html.encode())
         except FileNotFoundError:
-            self.send_error(403, "File not found[5]")
+            self.send_error(403, "File not found[7]")
 
+    # -----------------------------
+    # GET ROUTING
+    # -----------------------------
+    def do_GET(self):
+        # Basic pages
+        if self.path == "/":
+            return self.serve_file("pages/index.html", "text/html")
+        elif self.path == "/homelab":
+            return self.serve_file("pages/homelab.html", "text/html")
+        elif self.path == "/projects":
+            return self.serve_file("pages/projects.html", "text/html")
+        elif self.path == "/warp":
+            return self.serve_file("pages/warp.html", "text/html")
 
-# Data base logic being invoked I need to go over this and then test the functions still.
+        # -----------------------------
+        # Dynamic posts list
+        # -----------------------------
+        elif self.path == "/posts":
+            posts = db.list_posts()
+            html_posts = ""
+            for p in posts:
+                post_id = p[0]
+                title = p[1]
+                html_posts += (
+                    f"<div class='card'>"
+                    f"<a href='/post?id={post_id}' class='projects'>{title}</a>"
+                    f"</div>"
+                )
+            page_path = os.path.join(BASE_DIR, "pages", "posts.html")
+            with open(page_path, "r") as f:
+                page = f.read()
+            page = page.replace("{{posts}}", html_posts)
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            self.wfile.write(page.encode())
+            return
 
-    
+        # -----------------------------
+        # Single post + replies
+        # -----------------------------
+        elif self.path.startswith("/post"):
+            post_id = self.get_query_param("id")
+            if not post_id:
+                return self.send_error(400, "[1] Missing post id")
+            post_id = int(post_id)
+            post = db.get_post(post_id)
+            if not post:
+                return self.send_error(404, "[2] Post not found")
+            title = post[1]
+            content = post[2]
+            replies = db.list_replies(post_id)
+            reply_html = ""
+            for r in replies:
+                reply_id = r[0]
+                reply_content = r[2]
+                reply_html += (
+                    f"<div class='card'>{reply_content}"
+                    f"<form action='/delete_reply' method='POST'>"
+                    f"<input type='hidden' name='reply_id' value='{reply_id}'>"
+                    f"<input type='hidden' name='post_id' value='{post_id}'>"
+                    f"<button type='submit'>Delete</button>"
+                    f"</form></div>"
+                )
+            page_path = os.path.join(BASE_DIR, "pages", "post.html")
+            with open(page_path, "r") as f:
+                page = f.read()
+            page = page.replace("{{title}}", title)
+            page = page.replace("{{content}}", content)
+            page = page.replace("{{id}}", str(post_id))
+            page = page.replace("{{replies}}", reply_html)
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            self.wfile.write(page.encode())
+            return
+
+        # New post page (admin only)
+        elif self.path == "/new_post":
+            if not self.is_admin():
+                return self.send_error(403, "[3] Forbidden")
+            return self.serve_file("pages/new_post.html", "text/html")
+
+        # Repo browser
+        elif self.path.startswith('/projects/'):
+            relative = self.path.replace('/projects/', '')
+            full_path = os.path.join(PROJ_DIR, relative)
+            # prevent directory traversal
+            safe_path = os.path.normpath(full_path)
+            if not safe_path.startswith(PROJ_DIR):
+                return self.send_error(403, "[4] Forbidden")
+        # Directory listing
+            elif os.path.isdir(full_path):
+                return self.list_directory(full_path)
+        # File serving
+            return self.serve_project_file(full_path)
+
+        if self.path == "/repo":
+            files = list_repo_files()
+            html = "<html><body><h2>Repo Browser</h2><ul>"
+            for f in files:
+                link = f"/repo/file?name={f['name']}"
+                html += f'<li><a href="{link}">{f["name"]}</a></li>'
+            html += "</ul></body></html>"
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            self.wfile.write(html.encode())
+            return
+        elif self.path.startswith("/repo/file"):
+            qs = parse_qs(urlparse(self.path).query)
+            name = qs.get("name", [""])[0]
+            full_path = os.path.join(PROJ_DIR, name)
+            if not os.path.isfile(full_path):
+                return self.send_error(404, "[5] File not found")
+            html = render_source_file(full_path)
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            self.wfile.write(html.encode())
+            return
+
+        # Static files
+        elif self.path.startswith("/static"):
+            return self.serve_static(self.path)
+
+        # Unknown route
+        else:
+            self.send_error(404, "[6] Page not found")
+
+    # POST ROUTING
     def do_POST(self):
-        length = int(self.headers.get('Content-Length', 0))
+        length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(length).decode()
-    # Parse form data (key=value&key=value)
         params = {}
         for pair in body.split("&"):
             if "=" in pair:
                 k, v = pair.split("=", 1)
                 params[k] = v.replace("+", " ")
-        # Route: create a new post (admin only)
+
+        # Create post (admin only)
         if self.path == "/create_post":
             if not self.is_admin():
-                self.send_error(403, "Forbidden[4]")
-                return
-
+                return self.send_error(403, "[7] Forbidden")
             title = params.get("title", "")
-            content = params.get('content', '')
-            create_post(title, content)
+            content = params.get("content", "")
+            db.create_post(title, content)
+            return self.redirect("/posts")
 
-            self.redirect("/posts")
-            return
-            # Route: reply to a post (public)
-        if self.path == "/reply":
+        # Reply to post
+        elif self.path == "/reply":
             post_id = int(params.get("post_id"))
             content = params.get("content", "")
-            create_reply(post_id, content)
+            db.create_reply(post_id, content)
+            return self.redirect(f"/post?id={post_id}")
 
-            self.redirect(f'/post?id={post_id}')
-            return
-        # if no route matched
-        self.send_error(404, 'Not Found[5]')
+        # Delete reply (admin only)
+        elif self.path == "/delete_reply":
+            if not self.is_admin():
+                return self.send_error(403, "[8] Forbidden")
+            reply_id = int(params.get("reply_id"))
+            post_id = int(params.get("post_id"))
+            db.delete_reply(reply_id)
+            return self.redirect(f"/post?id={post_id}")
 
-    def redirect(self, location):
-        self.send_response(302)
-        self.send_header("Location", location)
-        self.end_headers()
+        # Unknown POST route
+        else:
+            self.send_error(404, "[10] Not Found")
 
-    def is_admin(self):
-        #only allow posting from localhost
-        return self.client_address[0] == "127.0.0.1"
-
-    def serve_file(self, relative_path, content_type):
-        full_path = os.path.join(BASE_DIR, relative_path)
-        try:
-            with open(full_path, 'rb') as f:
-                content = f.read()
-            self.send_response(200)
-            self.send_header('Content-type', content_type)
-            self.end_headers()
-            time.sleep(1)
-            self.wfile.write(content)
-        except FileNotFoundError:
-            self.send_error(404, "File not found")
-
-    def serve_static(self, path):
-        
-        # path looks like /static/style.css -> strip leading slash
-        relative_path = path.lstrip('/')
-        content_type = 'text/css' if path.endswith('.css') else 'application/octet-stream'
-        self.serve_file(relative_path, content_type)
-
-
-if __name__ == '__main__':
-    server = ThreadingHTTPServer(('127.0.0.1', 8010), Handler)
+# Server start
+if __name__ == "__main__":
+    server = ThreadingHTTPServer(("127.0.0.1", 8010), Handler)
     print("Serving on port 8010...")
     server.serve_forever()
