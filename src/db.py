@@ -1,7 +1,15 @@
+from datetime import datetime
 import sqlite3
 import os
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'replog.db')
+#This is my DB schema and is needed to define how my db will work on the lower level.
+#That way when i need to post, list post or replies, it will be more organized and less
+# code written in the long run.
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(BASE_DIR, 'replog.db')
+
+
 # this is going to create the db and place the replog.db file inside the dir
 # that I declare it to with the os functions
 def get_db():
@@ -32,6 +40,8 @@ def init_db():
     conn.close()
 
 def create_post(title, content):
+    print(title)
+    print(content)
     conn = get_db()
     cur = conn.cursor()
     cur.execute("INSERT INTO posts (title, content) VALUES (?, ?)",(title, content))

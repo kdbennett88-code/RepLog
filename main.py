@@ -116,6 +116,7 @@ class Handler(BaseHTTPRequestHandler):
     # GET ROUTING
     # -----------------------------
     def do_GET(self):
+        print("PATH:", repr(self.path))
         # Basic pages
         if self.path == "/":
             return self.serve_file("pages/index.html", "text/html")
@@ -123,27 +124,34 @@ class Handler(BaseHTTPRequestHandler):
             return self.serve_file("pages/homelab.html", "text/html")
         elif self.path == "/projects":
             return self.serve_file("pages/projects.html", "text/html")
-        elif self.path == "/warp":
-            return self.serve_file("pages/warp.html", "text/html")
+        elif self.path == '/new_post':
+            return self.serve_file('pages/new_post.html', 'text/html')
 
         # -----------------------------
         # Dynamic posts list
         # -----------------------------
-        elif self.path == "/posts":
+        elif '/post' in self.path:
+            
             posts = db.list_posts()
             html_posts = ""
+
             for p in posts:
                 post_id = p[0]
                 title = p[1]
+                
                 html_posts += (
                     f"<div class='card'>"
                     f"<a href='/post?id={post_id}' class='projects'>{title}</a>"
                     f"</div>"
                 )
+            print(html_posts)
             page_path = os.path.join(BASE_DIR, "pages", "posts.html")
             with open(page_path, "r") as f:
                 page = f.read()
+
             page = page.replace("{{posts}}", html_posts)
+            
+
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
@@ -153,7 +161,7 @@ class Handler(BaseHTTPRequestHandler):
         # -----------------------------
         # Single post + replies
         # -----------------------------
-        elif self.path.startswith("/post"):
+        elif self.path.startswith("/post-reply"):
             post_id = self.get_query_param("id")
             if not post_id:
                 return self.send_error(400, "[1] Missing post id")
@@ -176,9 +184,10 @@ class Handler(BaseHTTPRequestHandler):
                     f"<button type='submit'>Delete</button>"
                     f"</form></div>"
                 )
-            page_path = os.path.join(BASE_DIR, "pages", "post.html")
+            page_path = os.path.join(BASE_DIR, "pages", "post-reply.html")
             with open(page_path, "r") as f:
                 page = f.read()
+
             page = page.replace("{{title}}", title)
             page = page.replace("{{content}}", content)
             page = page.replace("{{id}}", str(post_id))
@@ -193,6 +202,7 @@ class Handler(BaseHTTPRequestHandler):
         elif self.path == "/new_post":
             if not self.is_admin():
                 return self.send_error(403, "[3] Forbidden")
+
             return self.serve_file("pages/new_post.html", "text/html")
 
         # Repo browser
@@ -203,9 +213,11 @@ class Handler(BaseHTTPRequestHandler):
             safe_path = os.path.normpath(full_path)
             if not safe_path.startswith(PROJ_DIR):
                 return self.send_error(403, "[4] Forbidden")
+
         # Directory listing
             elif os.path.isdir(full_path):
                 return self.list_directory(full_path)
+
         # File serving
             return self.serve_project_file(full_path)
 
@@ -215,19 +227,24 @@ class Handler(BaseHTTPRequestHandler):
             for f in files:
                 link = f"/repo/file?name={f['name']}"
                 html += f'<li><a href="{link}">{f["name"]}</a></li>'
+
             html += "</ul></body></html>"
+
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
             self.wfile.write(html.encode())
             return
+
         elif self.path.startswith("/repo/file"):
             qs = parse_qs(urlparse(self.path).query)
             name = qs.get("name", [""])[0]
             full_path = os.path.join(PROJ_DIR, name)
             if not os.path.isfile(full_path):
                 return self.send_error(404, "[5] File not found")
+
             html = render_source_file(full_path)
+
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
@@ -266,7 +283,7 @@ class Handler(BaseHTTPRequestHandler):
             post_id = int(params.get("post_id"))
             content = params.get("content", "")
             db.create_reply(post_id, content)
-            return self.redirect(f"/post?id={post_id}")
+            return self.redirect(f"/post-reply?id={post_id}")
 
         # Delete reply (admin only)
         elif self.path == "/delete_reply":
@@ -275,7 +292,7 @@ class Handler(BaseHTTPRequestHandler):
             reply_id = int(params.get("reply_id"))
             post_id = int(params.get("post_id"))
             db.delete_reply(reply_id)
-            return self.redirect(f"/post?id={post_id}")
+            return self.redirect(f"/post-reply?id={post_id}")
 
         # Unknown POST route
         else:
@@ -283,6 +300,9 @@ class Handler(BaseHTTPRequestHandler):
 
 # Server start
 if __name__ == "__main__":
+    db.init_db()
+
     server = ThreadingHTTPServer(("127.0.0.1", 8010), Handler)
-    print("Serving on port 8010...")
+
+    print("Serving..")
     server.serve_forever()
